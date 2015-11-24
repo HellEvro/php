@@ -1,8 +1,8 @@
 # php
  Stampery API for PHP. Notarize all your data using the blockchain!
 
- [![Latest Stable Version](https://poser.pugx.org/pugx/badge-poser/version.svg)](https://packagist.org/packages/stampery/php)
- [![License](https://poser.pugx.org/pugx/badge-poser/license.svg)](https://packagist.org/packages/stampery/php)
+ [![Latest Stable Version](https://poser.pugx.org/stampery/php/v/stable)](https://packagist.org/packages/stampery/php)
+ [![License](https://poser.pugx.org/stampery/php/license)](https://packagist.org/packages/stampery/php)
 
 ## Get Started
 
