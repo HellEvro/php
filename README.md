@@ -4,7 +4,7 @@
  [![Latest Stable Version](https://poser.pugx.org/pugx/badge-poser/version.svg)](https://packagist.org/packages/stampery/php)
  [![License](https://poser.pugx.org/pugx/badge-poser/license.svg)](https://packagist.org/packages/stampery/php)
 
- ## Get Started
+## Get Started
 
 ```
 composer require stampery/php
