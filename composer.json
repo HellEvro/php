@@ -8,6 +8,7 @@
     ],
     "description": "Stampery API for PHP. Notarize all your data using the blockchain!",
     "homepage": "https://stampery.com",
+    "license": "MIT",
     "name": "stampery/php",
     "require": {
       "php": ">=5.3",
