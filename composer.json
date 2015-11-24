@@ -1,0 +1,17 @@
+{
+    "authors": [
+      {
+        "name": "Adán Sánchez de Pedro Crespo",
+        "email": "adan@stampery.co",
+        "role": "Developer"
+      }
+    ],
+    "description": "Stampery API for PHP. Notarize all your data using the blockchain!",
+    "homepage": "https://stampery.com",
+    "name": "stampery/php",
+    "require": {
+      "php": ">=5.3",
+      "ext-curl": "*"
+    },
+    "version": "1.0.0"
+}
