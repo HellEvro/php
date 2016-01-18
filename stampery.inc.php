@@ -1,11 +1,12 @@
 <?php
+require './vendor/autoload.php';
 
 class Stampery
 {
 
   private $endpoints = array(
-    'prod' => 'https://stampery.herokuapp.com/api/v2',
-    'beta' => 'https://stamperybeta.herokuapp.com/api/v2'
+    'prod' => 'https://api.stampery.com/v2',
+    'beta' => 'https://stampery-api-beta.herokuapp.com/v2'
   );
 
   public function __construct($secret, $branch = 'prod')
@@ -121,14 +122,16 @@ class Stampery
 
   public function stamp($data = array(), $file = null)
   {
-    if ($file)
-      $stamp = $this->_stampFile($data, $file);
-    else
-      $stamp = $this->_stampJSON($data);
-    if (isset($stamp->hash))
-      return $stamp->hash;
-    else
-      throw new Exception('Could not stamp: reason unknown.');
+    igorw\retry(3, function() use ($data, $file) {
+      if ($file)
+        $stamp = $this->_stampFile($data, $file);
+      else
+        $stamp = $this->_stampJSON($data);
+      if (isset($stamp->hash))
+        return $stamp->hash;
+      else
+        throw new Exception('Could not stamp: reason unknown.');
+   }); 
   }
 
   public function get($hash)
