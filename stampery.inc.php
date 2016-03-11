@@ -122,7 +122,7 @@ class Stampery
 
   public function stamp($data = array(), $file = null)
   {
-    igorw\retry(3, function() use ($data, $file) {
+    return igorw\retry(3, function() use ($data, $file) {
       if ($file)
         $stamp = $this->_stampFile($data, $file);
       else
@@ -131,12 +131,12 @@ class Stampery
         return $stamp->hash;
       else
         throw new Exception('Could not stamp: reason unknown.');
-   }); 
+   });
   }
 
   public function get($hash)
   {
-    return $this->_get('stamps/' . $hash)->stamp;
+    return $this->_get('stamps/' . $hash);
   }
 
 }
