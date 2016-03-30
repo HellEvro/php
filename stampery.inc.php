@@ -22,8 +22,8 @@ class Stampery
     $type = gettype($data);
     if ($type == "resource")
     {
-      $url = basename(stream_get_meta_data($data)["uri"]);
-      return hash_file('sha256', $url);
+      $uri = stream_get_meta_data($data)["uri"];
+      return hash_file('sha256', $uri);
     } else if ($type == "string")
     {
       return hash('sha256', $data);
