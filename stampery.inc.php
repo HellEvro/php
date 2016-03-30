@@ -19,7 +19,20 @@ class Stampery
 
   public function hash($data)
   {
-    return hash('sha256', json_encode($data));
+    $type = gettype($data);
+    if ($type == "resource")
+    {
+      $url = basename(stream_get_meta_data($data)["uri"]);
+      return hash_file('sha256', $url);
+    } else if ($type == "string")
+    {
+      return hash('sha256', $data);
+    } else
+    {
+      $json4 = json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+      $json2 = preg_replace('/^(  +?)\\1(?=[^ ])/m', '$1', $json4);
+      return hash('sha256', $json2);
+    }
   }
 
   private function _curl($method, $url, $query = null, $isJSON = false)
@@ -33,7 +46,6 @@ class Stampery
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-    #curl_setopt($ch, CURLOPT_VERBOSE, true);
 
     if (isset($query))
       curl_setopt($ch, CURLOPT_POSTFIELDS, $query);
@@ -77,47 +89,25 @@ class Stampery
 
   private function _stampFile($data, $file)
   {
-    $url = $this->endpoint . '/stamps';
-    $eol = "\r\n";
-    $mime_boundary = md5(time());
-    $isResource = gettype($file) == "resource";
-    $name = '';
+    $data['hash'] = $this->hash($file);
+    return $this->_post('stamps', $data, true);
+  }
 
-    if ($isResource)
-    {
-      $name = basename(stream_get_meta_data($file)["uri"]);
-      $string = stream_get_contents($file);
-    }
-    else
-      $string = $file;
+  private function _checkDataIntegrity($proofHash, $data)
+  {
+    $dataHash = $this->hash($data);
+    $stamp = $this->get($proofHash);
+    $stampDataHash = $this->hash($stamp->data);
+    return $dataHash == $stampDataHash;
+  }
 
-    if (isset($data->name))
-      $name = $data->name;
-
-    $mp = '--' . $mime_boundary . $eol;
-    $mp .= 'Content-Disposition: form-data; name="data"' . $eol . $eol;
-    $mp .= json_encode($data) . $eol;
-    $mp .= '--' . $mime_boundary . $eol;
-    $mp .= 'Content-Disposition: form-data; name="file"; filename="' . $name . '"' . $eol;
-    $mp .= 'Content-Type: text/plain' . $eol . $eol;
-    $mp .= chunk_split($string) . $eol;
-    $mp .= '--' . $mime_boundary . '--' . $eol . $eol;
-
-    $params = array('http' => array(
-                      'method' => 'POST',
-                      'header' => 'Content-Type: multipart/form-data; boundary=' . $mime_boundary . $eol .'Authorization: ' . $this->auth . $eol,
-                      'content' => $mp
-                   ));
-
-    $ctx = stream_context_create($params);
-    $raw = file_get_contents($url, FILE_TEXT, $ctx);
-    $res = json_decode($raw);
-    if (isset($res->hash))
-      return $res;
-    else if (explode(' ', $http_response_header[0])[1] == '409')
-      throw new Exception('Could not stamp: file was already stamped.');
-    else
-      throw new Exception('Could not stamp: reason unknown.');
+  private function _checkFileIntegrity($proofHash, $data, $file)
+  {
+    $data['hash'] = $this->hash($file);
+    $dataHash = $this->hash($data);
+    $stamp = $this->get($proofHash);
+    $stampDataHash = $this->hash($stamp->data);
+    return $dataHash == $stampDataHash;
   }
 
   public function stamp($data = array(), $file = null)
@@ -136,7 +126,15 @@ class Stampery
 
   public function get($hash)
   {
-    return $this->_get('stamps/' . $hash);
+    return $this->_get('stamps/' . strtoupper($hash));
+  }
+
+  public function checkIntegrity($proofHash, $data = array(), $file = null)
+  {
+    if ($file)
+      return $this->_checkFileIntegrity($proofHash, $data, $file);
+    else
+      return $this->_checkDataIntegrity($proofHash, $data);
   }
 
 }

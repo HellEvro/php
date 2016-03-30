@@ -20,7 +20,7 @@
     "require": {
       "php": ">=5.3",
       "ext-curl": "*",
-        "igorw/retry": "^1.0@dev"
+      "igorw/retry": "^1.0@dev"
     },
-    "version": "1.0.1"
+    "version": "1.2.0"
 }
