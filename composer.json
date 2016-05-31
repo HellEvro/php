@@ -7,20 +7,14 @@
       }
     ],
     "minimum-stability": "dev",
-    "description": "Stampery API for PHP. Notarize all your data using the blockchain!",
+    "description": "Stampery API for PHP. Certify all your data using the blockchain!",
     "homepage": "https://stampery.com",
     "license": "MIT",
     "name": "stampery/php",
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/igorw/retry"
-        }
-    ],
+    "repositories": [],
     "require": {
       "php": ">=5.3",
-      "ext-curl": "*",
-      "igorw/retry": "^1.0@dev"
+      "php-amqplib/php-amqplib": "2.6.*"
     },
-    "version": "1.1.1"
+    "version": "2.0.0"
 }
