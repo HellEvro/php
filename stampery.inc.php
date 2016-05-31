@@ -1,140 +1,98 @@
 <?php
-require './vendor/autoload.php';
+require_once __DIR__ . '/vendor/autoload.php';
+use PhpAmqpLib\Connection\AMQPStreamConnection;
+use PhpAmqpLib\Message\AMQPMessage;
+use Epkm\MessagePackRpc\Client;
+use bb\Sha3\Sha3;
 
 class Stampery
 {
 
-  private $endpoints = array(
-    'prod' => 'https://api.stampery.com/v2',
-    'beta' => 'https://stampery-api-beta.herokuapp.com/v2'
+  private $apiEndpoints = array(
+    'prod' => array('api.stampery.com', 4000),
+    'beta' => array('api-beta.stampery.com', 4000)
   );
+
+  private $amqpEndpoints = array(
+    'prod' => array('young-squirrel.rmq.cloudamqp.com', 5672, 'consumer', '9FBln3UxOgwgLZtYvResNXE7', 'ukgmnhoi'),
+    'beta' => array('young-squirrel.rmq.cloudamqp.com', 5672, 'consumer', '9FBln3UxOgwgLZtYvResNXE7', 'beta')
+  );
+
+  private function _apiLogin($endpoint)
+  {
+    $this->apiClient = new Client($endpoint[0], $endpoint[1]);
+    $auth = $this->apiClient->call('stampery.3.auth', array($this->clientId, $this->clientSecret));
+  }
+
+  private function _amqpLogin($endpoint)
+  {
+    $this->amqpConn = call_user_func_array(
+      function ($host, $port, $user, $pass, $vhost)
+      {
+        return new AMQPStreamConnection($host, $port, $user, $pass, $vhost);
+      },
+      $this->amqpEndpoint
+    );
+    $this->amqpChannel = $this->amqpConn->channel();
+    $this->amqpChannel->basic_consume($this->clientId.'-clnt', '', false, true, false, false, function($msg)
+    {
+      $hash = $msg->delivery_info["routing_key"];
+      $proof = msgpack_unpack($msg->body);
+      $this->_trigger('proof', array($hash, $proof));
+    });
+    $this->_trigger('ready', array($this));
+    while(count($this->amqpChannel->callbacks)) {
+      $this->amqpChannel->wait();
+    }
+  }
 
   public function __construct($secret, $branch = 'prod')
   {
-    $this->secret = $secret;
-    $this->clientId = substr(md5($this->secret), 0, 15);
-    $this->auth = base64_encode($this->clientId . ':' . $this->secret);
-    $this->endpoint = isset($this->endpoints[$branch]) ? $this->endpoints[$branch] : $this->endpoints['prod'];
+    $this->eventHandlers = array();
+
+    $this->clientSecret = $secret;
+    $this->clientId = substr(md5($this->clientSecret), 0, 15);
+    $this->apiEndpoint = isset($this->apiEndpoints[$branch]) ? $this->apiEndpoints[$branch] : $this->apiEndpoints['prod'];
+    $this->amqpEndpoint = isset($this->amqpEndpoints[$branch]) ? $this->amqpEndpoints[$branch] : $this->amqpEndpoints['prod'];
+  }
+
+  public function start() {
+    $this->_apiLogin($this->apiEndpoint);
+    $this->_amqpLogin($this->amqpEndpoint);
+  }
+
+  private function _trigger($eventType, $params = array())
+  {
+    if (isset($this->eventHandlers[$eventType]))
+      foreach ($this->eventHandlers[$eventType] as $callback)
+        call_user_func_array($callback, $params);
+  }
+
+  public function on($eventType, $callback)
+  {
+    if (is_callable($callback))
+    {
+      if (isset($this->eventHandlers[$eventType]))
+        array_push($this->eventHandlers[$eventType], $callback);
+      else
+        $this->eventHandlers[$eventType] = array($callback);
+      return true;
+    }
+    else
+      throw new Exception('Event callback is not callable.');
+  }
+
+  public function stamp($hash)
+  {
+    $hash = strtoupper($hash);
+    $this->apiClient->call('stamp', array($hash));
+    return true;
   }
 
   public function hash($data)
   {
-    $type = gettype($data);
-    if ($type == "resource")
-    {
-      $uri = stream_get_meta_data($data)["uri"];
-      return hash_file('sha256', $uri);
-    } else if ($type == "string")
-    {
-      return hash('sha256', $data);
-    } else
-    {
-      $json4 = json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
-      $json2 = preg_replace('/^(  +?)\\1(?=[^ ])/m', '$1', $json4);
-      return hash('sha256', $json2);
-    }
-  }
-
-  private function _curl($method, $url, $query = null, $isJSON = false)
-  {
-    $headers = array('Authorization: ' . $this->auth);
-    if ($isJSON)
-      array_push($headers, 'Content-Type: application/json');
-
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-
-    if (isset($query))
-      curl_setopt($ch, CURLOPT_POSTFIELDS, $query);
-
-    $raw = curl_exec($ch);
-    curl_close($ch);
-    $res = json_decode($raw);
-    if ($res)
-    {
-      if (isset($res->err))
-        throw new Exception($res->err);
-      else
-        return $res;
-    }
-    else
-      return $raw;
-  }
-
-  private function _get($action, $params = null)
-  {
-    $url = $this->endpoint . '/' . $action;
-    if ($params)
-      $url .= '?' . http_build_query($params);
-    return $this->_curl('GET', $url);
-  }
-
-  private function _post($action, $params = null, $isJSON = false)
-  {
-    $url = $this->endpoint . '/' . $action;
-    if ($isJSON)
-      $query = json_encode($params);
-    else
-      $query = http_build_query($params);
-    return $this->_curl('POST', $url, $query, $isJSON);
-  }
-
-  private function _stampJSON($data)
-  {
-    return $this->_post('stamps', $data, true);
-  }
-
-  private function _stampFile($data, $file)
-  {
-    $data['hash'] = $this->hash($file);
-    return $this->_post('stamps', $data, true);
-  }
-
-  private function _checkDataIntegrity($proofHash, $data)
-  {
-    $dataHash = $this->hash($data);
-    $stamp = $this->get($proofHash);
-    $stampDataHash = $this->hash($stamp->data);
-    return $dataHash == $stampDataHash;
-  }
-
-  private function _checkFileIntegrity($proofHash, $data, $file)
-  {
-    $data['hash'] = $this->hash($file);
-    $dataHash = $this->hash($data);
-    $stamp = $this->get($proofHash);
-    $stampDataHash = $this->hash($stamp->data);
-    return $dataHash == $stampDataHash;
-  }
-
-  public function stamp($data = array(), $file = null)
-  {
-    return igorw\retry(3, function() use ($data, $file) {
-      if ($file)
-        $stamp = $this->_stampFile($data, $file);
-      else
-        $stamp = $this->_stampJSON($data);
-      if (isset($stamp->hash))
-        return $stamp->hash;
-      else
-        throw new Exception('Could not stamp: reason unknown.');
-   });
-  }
-
-  public function get($hash)
-  {
-    return $this->_get('stamps/' . strtoupper($hash));
-  }
-
-  public function checkIntegrity($proofHash, $data = array(), $file = null)
-  {
-    if ($file)
-      return $this->_checkFileIntegrity($proofHash, $data, $file);
-    else
-      return $this->_checkDataIntegrity($proofHash, $data);
+    return strtoupper(Sha3::hash($data, 512));
   }
 
 }
+

@@ -2,19 +2,19 @@
 
 include('stampery.inc.php');
 
-$s = new Stampery('830fa1bf-bee7-4412-c1d3-31dddba2213d', 'prod');
+$s = new Stampery('367c6ec2-5791-4cf5-8094-4bae00c639b4', 'prod');
 
-try {
+$s->on('ready', function($s)
+{
+  echo("Ready to stamp!\n");
+  $digest = $s->hash("Hello, blockchain!");
+  $res = $s->stamp($digest);
+});
 
-  $hash = $s->stamp(array('name' => 'Stamped data', 'foo' => 'bar'));
-  var_dump($s->get($hash));
+$s->on('proof', function($hash, $proof)
+{
+  echo("Received proof for hash ".$hash."\n");
+  var_dump($proof);
+});
 
-  $hash = $s->stamp(array('name' => 'Stamped file'), file_get_contents('README.md'));
-  var_dump($s->get($hash));
-
-  $hash = $s->stamp(array('name' => 'Stamped file'), fopen('README.md', 'r'));
-  var_dump($s->get($hash));
-
-} catch (Exception $e) {
-  echo "API Error: \"",  $e->getMessage(), "\"\n";
-}
+$s->start();

@@ -1,20 +1,27 @@
 {
-    "authors": [
-      {
-        "name": "Adán Sánchez de Pedro Crespo",
-        "email": "adan@stampery.co",
-        "role": "Developer"
-      }
-    ],
-    "minimum-stability": "dev",
-    "description": "Stampery API for PHP. Certify all your data using the blockchain!",
-    "homepage": "https://stampery.com",
-    "license": "MIT",
-    "name": "stampery/php",
-    "repositories": [],
-    "require": {
-      "php": ">=5.3",
-      "php-amqplib/php-amqplib": "2.6.*"
-    },
-    "version": "2.0.0"
+  "authors": [
+    {
+      "name": "Adán Sánchez de Pedro Crespo",
+      "email": "adan@stampery.co",
+      "role": "Developer"
+    }
+  ],
+  "minimum-stability": "dev",
+  "description": "Stampery API for PHP. Certify all your data using the blockchain!",
+  "homepage": "https://stampery.com",
+  "license": "MIT",
+  "name": "stampery/php",
+  "repositories": [{
+    "type": "vcs",
+    "url": "https://github.com/aesedepece/php-sha3"
+  }],
+  "require": {
+    "php": ">=5.3",
+    "ext-bcmath": "*",
+    "ext-mbstring": "*",
+    "php-amqplib/php-amqplib": "2.6.*",
+    "ltd-beget/msgpackrpc": "^0.1.0",
+    "bb/php-sha3": "dev-master"
+  },
+  "version": "2.0.0"
 }
