@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "129ac50f7e32f173d4b6881a4b58a822",
-    "content-hash": "27b98d0aad364a06050fafae05285139",
+    "hash": "20c1732c3a51801e11c6e1a119475c5d",
+    "content-hash": "d047060db833f6b7e8ff6f31bbbd7291",
     "packages": [
         {
             "name": "bb/php-sha3",
@@ -60,16 +60,16 @@
             "time": "2015-08-23 19:49:50"
         },
         {
-            "name": "ltd-beget/msgpackrpc",
+            "name": "epokmedia/msgpackrpc",
             "version": "0.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/LTD-Beget/msgpackrpc.git",
+                "url": "https://github.com/epokmedia/msgpackrpc.git",
                 "reference": "cb2a09ab4ca283e54df3cacc20b153376d31ff0b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/LTD-Beget/msgpackrpc/zipball/cb2a09ab4ca283e54df3cacc20b153376d31ff0b",
+                "url": "https://api.github.com/repos/epokmedia/msgpackrpc/zipball/cb2a09ab4ca283e54df3cacc20b153376d31ff0b",
                 "reference": "cb2a09ab4ca283e54df3cacc20b153376d31ff0b",
                 "shasum": ""
             },
@@ -170,40 +170,35 @@
         },
         {
             "name": "zendframework/zend-json",
-            "version": "2.6.1",
+            "version": "dev-develop",
             "source": {
                 "type": "git",
                 "url": "https://github.com/zendframework/zend-json.git",
-                "reference": "4c8705dbe4ad7d7e51b2876c5b9eea0ef916ba28"
+                "reference": "abef83ca145e842baf71158f17eaa9b80f543be9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zendframework/zend-json/zipball/4c8705dbe4ad7d7e51b2876c5b9eea0ef916ba28",
-                "reference": "4c8705dbe4ad7d7e51b2876c5b9eea0ef916ba28",
+                "url": "https://api.github.com/repos/zendframework/zend-json/zipball/abef83ca145e842baf71158f17eaa9b80f543be9",
+                "reference": "abef83ca145e842baf71158f17eaa9b80f543be9",
                 "shasum": ""
             },
             "require": {
                 "php": "^5.5 || ^7.0"
             },
             "require-dev": {
-                "fabpot/php-cs-fixer": "1.7.*",
                 "phpunit/phpunit": "~4.0",
-                "zendframework/zend-http": "^2.5.4",
-                "zendframework/zend-server": "^2.6.1",
-                "zendframework/zend-stdlib": "^2.5 || ^3.0",
-                "zendframework/zendxml": "^1.0.2"
+                "squizlabs/php_codesniffer": "^2.3",
+                "zendframework/zend-stdlib": "^2.7 || ^3.0"
             },
             "suggest": {
-                "zendframework/zend-http": "Zend\\Http component, required to use Zend\\Json\\Server",
-                "zendframework/zend-server": "Zend\\Server component, required to use Zend\\Json\\Server",
-                "zendframework/zend-stdlib": "Zend\\Stdlib component, for use with caching Zend\\Json\\Server responses",
-                "zendframework/zendxml": "To support Zend\\Json\\Json::fromXml() usage"
+                "zendframework/zend-json-server": "For implementing JSON-RPC servers",
+                "zendframework/zend-xml2json": "For converting XML documents to JSON"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.6-dev",
-                    "dev-develop": "2.7-dev"
+                    "dev-master": "3.0-dev",
+                    "dev-develop": "3.1-dev"
                 }
             },
             "autoload": {
@@ -221,7 +216,7 @@
                 "json",
                 "zf2"
             ],
-            "time": "2016-02-04 21:20:26"
+            "time": "2016-04-12 21:11:28"
         },
         {
             "name": "zendframework/zend-serializer",
@@ -229,34 +224,34 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/zendframework/zend-serializer.git",
-                "reference": "91ff28d296cf8fbe6f71ed733546661150b66a55"
+                "reference": "8623ca7460412b759ada1b17bf482ada00dffbfb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zendframework/zend-serializer/zipball/91ff28d296cf8fbe6f71ed733546661150b66a55",
-                "reference": "91ff28d296cf8fbe6f71ed733546661150b66a55",
+                "url": "https://api.github.com/repos/zendframework/zend-serializer/zipball/8623ca7460412b759ada1b17bf482ada00dffbfb",
+                "reference": "8623ca7460412b759ada1b17bf482ada00dffbfb",
                 "shasum": ""
             },
             "require": {
-                "php": "^5.5 || ^7.0",
-                "zendframework/zend-json": "^2.5",
+                "php": "^5.6 || ^7.0",
+                "zendframework/zend-json": "^2.5 || ^3.0",
                 "zendframework/zend-stdlib": "^2.7 || ^3.0"
             },
             "require-dev": {
-                "fabpot/php-cs-fixer": "1.7.*",
                 "phpunit/phpunit": "^4.5",
+                "squizlabs/php_codesniffer": "^2.3.1",
                 "zendframework/zend-math": "^2.6",
                 "zendframework/zend-servicemanager": "^2.7.5 || ^3.0.3"
             },
             "suggest": {
-                "zendframework/zend-math": "(^2.6) To support Python Pickle serialization",
-                "zendframework/zend-servicemanager": "To support plugin manager support"
+                "zendframework/zend-math": "(^2.6 || ^3.0) To support Python Pickle serialization",
+                "zendframework/zend-servicemanager": "(^2.7.5 || ^3.0.3) To support plugin manager support"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.7-dev",
-                    "dev-develop": "2.8-dev"
+                    "dev-master": "2.8-dev",
+                    "dev-develop": "2.9-dev"
                 },
                 "zf": {
                     "component": "Zend\\Serializer",
@@ -278,7 +273,7 @@
                 "serializer",
                 "zf2"
             ],
-            "time": "2016-05-11 16:55:19"
+            "time": "2016-07-19 19:51:15"
         },
         {
             "name": "zendframework/zend-stdlib",

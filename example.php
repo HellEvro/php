@@ -2,7 +2,7 @@
 
 include('stampery.inc.php');
 
-$s = new Stampery('367c6ec2-5791-4cf5-8094-4bae00c639b4', 'prod');
+$s = new Stampery('2d4cdee7-38b0-4a66-da87-c1ab05b43768', 'prod');
 
 $s->on('ready', function($s)
 {
