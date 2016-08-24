@@ -44,7 +44,7 @@ $stampery->stamp($digest);
 ### File stamping
 ```php
 $file = file_get_contents('/path/to/file.txt');
-$digest = $stampery->hash($string);
+$digest = $stampery->hash($file);
 $stampery->stamp($digest);
 ```
 ### Arbitrary object stamping
