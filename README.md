@@ -57,6 +57,16 @@ $json = json_encode($data);
 $digest = $stampery->hash($json);
 $stampery->stamp($digest);
 ```
+
+# Official implementations
+- [NodeJS](https://github.com/stampery/node)
+- [PHP](https://github.com/stampery/php)
+- [ruby](https://github.com/stampery/ruby)
+- [Python](https://github.com/stampery/python)
+- [Elixir](https://github.com/stampery/elixir)
+- [Java](https://github.com/stampery/java)
+- [Go](https://github.com/stampery/go)
+
 ## License
 
 Code released under [the MIT license](https://github.com/stampery/js/blob/master/LICENSE).
