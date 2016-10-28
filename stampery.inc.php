@@ -5,17 +5,38 @@ use PhpAmqpLib\Message\AMQPMessage;
 use Epkm\MessagePackRpc\Client;
 use bb\Sha3\Sha3;
 
+class Anchor
+{
+  function __construct($protoAnchor)
+  {
+    $this->chain = $protoAnchor[0];
+    $this->txId = $protoAnchor[1];
+  }
+}
+
+class Proof
+{
+  function __construct($hash, $protoProof) {
+    $this->hash = $hash;
+    $this->version = $protoProof[0];
+    $this->siblings = $protoProof[1] == "" ? array() : $protoProof[1];
+    $this->root = $protoProof[2];
+    $this->anchor = new Anchor($protoProof[3]);
+  }
+}
+
 class Stampery
 {
-
   private $apiEndpoints = array(
     'prod' => array('api.stampery.com', 4000),
     'beta' => array('api-beta.stampery.com', 4000)
   );
 
   private $amqpEndpoints = array(
-    'prod' => array('young-squirrel.rmq.cloudamqp.com', 5672, 'consumer', '9FBln3UxOgwgLZtYvResNXE7', 'ukgmnhoi'),
-    'beta' => array('young-squirrel.rmq.cloudamqp.com', 5672, 'consumer', '9FBln3UxOgwgLZtYvResNXE7', 'beta')
+    'prod' => array('young-squirrel.rmq.cloudamqp.com', 5672, 'consumer',
+                    '9FBln3UxOgwgLZtYvResNXE7', 'ukgmnhoi'),
+    'beta' => array('young-squirrel.rmq.cloudamqp.com', 5672, 'consumer',
+                    '9FBln3UxOgwgLZtYvResNXE7', 'beta')
   );
 
   private function _apiLogin($endpoint)
@@ -34,11 +55,13 @@ class Stampery
       $this->amqpEndpoint
     );
     $this->amqpChannel = $this->amqpConn->channel();
-    $this->amqpChannel->basic_consume($this->clientId.'-clnt', '', false, true, false, false, function($msg)
+    $this->amqpChannel->basic_consume($this->clientId.'-clnt', '', false, true,
+      false, false, function($msg)
     {
       $hash = $msg->delivery_info["routing_key"];
-      $proof = msgpack_unpack($msg->body);
-      $this->_trigger('proof', array($hash, $proof));
+      $protoProof = msgpack_unpack($msg->body);
+      $proof = new Proof($hash, $protoProof);
+      $this->_trigger('proof', array($hash, $proof, $this));
     });
     $this->_trigger('ready', array($this));
     while(count($this->amqpChannel->callbacks)) {
@@ -52,8 +75,12 @@ class Stampery
 
     $this->clientSecret = $secret;
     $this->clientId = substr(md5($this->clientSecret), 0, 15);
-    $this->apiEndpoint = isset($this->apiEndpoints[$branch]) ? $this->apiEndpoints[$branch] : $this->apiEndpoints['prod'];
-    $this->amqpEndpoint = isset($this->amqpEndpoints[$branch]) ? $this->amqpEndpoints[$branch] : $this->amqpEndpoints['prod'];
+    $this->apiEndpoint = isset($this->apiEndpoints[$branch])
+      ? $this->apiEndpoints[$branch]
+      : $this->apiEndpoints['prod'];
+    $this->amqpEndpoint = isset($this->amqpEndpoints[$branch])
+      ? $this->amqpEndpoints[$branch]
+      : $this->amqpEndpoints['prod'];
   }
 
   public function start() {
@@ -94,5 +121,34 @@ class Stampery
     return strtoupper(Sha3::hash($data, 512));
   }
 
+  public function prove($proof)
+  {
+    return $this->_prove(
+      $proof->hash,
+      array_reverse($proof->siblings),
+      $proof->root
+    );
+  }
+
+  private function _prove($hash, $siblings, $root)
+  {
+    if (count($siblings) > 0)
+    {
+      $head = array_pop($siblings);
+      $mixed = $this->_mix($hash, $head);
+      return $this->_prove($mixed, $siblings, $root);
+    }
+    else
+      return $hash == $root;
+  }
+
+  private function _mix($a, $b)
+  {
+    $a = hex2bin($a);
+    $b = hex2bin($b);
+    $commuted = $a > $b ? $a.$b : $b.$a;
+    $digest = $this->hash($commuted);
+    return $digest;
+  }
 }
 

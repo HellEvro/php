@@ -1,44 +1,58 @@
-# Stampery PHP
+# Stampery
  Stampery API for PHP. Notarize all your data using the blockchain!
 
  [![Latest Stable Version](https://poser.pugx.org/stampery/php/v/stable)](https://packagist.org/packages/stampery/php)
  [![License](https://poser.pugx.org/stampery/php/license)](https://packagist.org/packages/stampery/php)
 
-## Getting Started
+
+PHP client library for [Stampery API](https://stampery.com/api), the blockchain-powered, industrial-scale certification platform.
+
+Seamlessly integrate industrial-scale data certification into your own PHP apps. The Stampery API adds a layer of transparency, attribution, accountability and auditability to your applications by connecting them to Stampery's infinitely scalable [Blockchain Timestamping Architecture](https://stampery.com/tech).
+
+## Installation
+
+  1. Install `stampery` into your project using `composer`:
 
 ```
 composer require stampery/php
 ```
 
-```php
-$stampery = include('stampery.inc.php');
-$stampery = new Stampery('830fa1bf-bee7-4412-c1d3-31dddba2213d');
+  2. Go to the [API dashboard](https://api-dashboard.stampery.com), sign up and create a token for your application. It will resemble this:
 
-$stampery.on('proof', function(hash, proof){
- echo("Received proof for hash" . $hash . "\n");
- echo("Protocol version: " . $proof[0] . "\n");
- echo("Merkle siblings:"\n");
- var_dump($proof[1]);
- echo("Merkle root: " . $proof[2] . "\n");
- echo("Blockchain: " . array('Bitcoin', 'Ethereum')[$proof[3][0]] . "\n");
- echo("Transaction ID: " . $proof[3][1] . "\n");
+```
+2f6215c7-ad87-4d6e-bf9e-e9f07aa35f1a
+```
+
+## Usage (full example)
+
+```php
+include('stampery.inc.php');
+
+// Sign up and get your secret token at https://api-dashboard.stampery.com
+$s = new Stampery('your-secret-token', 'prod');
+
+$s->on('ready', function($s)
+{
+  echo("Ready to stamp!\n");
+  $digest = $s->hash("Hello, blockchain!");
+  $res = $s->stamp($digest);
 });
 
-$stampery.on('ready', function($stampery){
- echo("Stampery is ready to stamp\n");
+$s->on('proof', function($hash, $proof)
+{
+  echo("Received proof for hash ".$hash."\n");
+  var_dump($proof);
 });
 
-$stampery->start();
+$s->start();
 ```
-### Hash stamping
+
+### Hashing
 ```php
-$digest = 'A69F73CCA23A9AC5C8B567DC185A756E97C982164FE25859E0D1DCC1475C80A615B2123AF1F5F94C11E3E9402C3AC558F500199D95B6D3E301758586281DCD26';
-$stampery->stamp($digest);
+$digest = $->hash("Hello, blockchain!");
 ```
-### String stamping
+### Basic stamping
 ```php
-$string = 'Hello, Blockchain!';
-$digest = $stampery->hash($string);
 $stampery->stamp($digest);
 ```
 ### File stamping
@@ -58,17 +72,20 @@ $digest = $stampery->hash($json);
 $stampery->stamp($digest);
 ```
 
-# Official implementations
+## Client libraries for other platforms
 - [NodeJS](https://github.com/stampery/node)
 - [PHP](https://github.com/stampery/php)
-- [ruby](https://github.com/stampery/ruby)
+- [Ruby](https://github.com/stampery/ruby)
 - [Python](https://github.com/stampery/python)
-- [Elixir](https://github.com/stampery/elixir)
 - [Java](https://github.com/stampery/java)
 - [Go](https://github.com/stampery/go)
 
+## Feedback
+
+Ping us at [support@stampery.com](mailto:support@stampery.com) and we will more than happy to help you! 😃
+
 ## License
 
-Code released under [the MIT license](https://github.com/stampery/js/blob/master/LICENSE).
+Code released under [the MIT license](https://github.com/stampery/node/blob/master/LICENSE).
 
-Copyright 2015 Stampery
+Copyright 2015-2016 Stampery, Inc.
