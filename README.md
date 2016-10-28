@@ -12,7 +12,9 @@ composer require stampery/php
 
 ```php
 $stampery = include('stampery.inc.php');
-$stampery = new Stampery('830fa1bf-bee7-4412-c1d3-31dddba2213d');
+
+// Sign up and get your secret token at https://api-dashboard.stampery.com
+$stampery = new Stampery('user-secret');
 
 $stampery.on('proof', function(hash, proof){
  echo("Received proof for hash" . $hash . "\n");
