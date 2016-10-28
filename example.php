@@ -3,8 +3,7 @@
 include('stampery.inc.php');
 
 // Sign up and get your secret token at https://api-dashboard.stampery.com
-// Please use 'beta' for testing and 'prod' for production
-$s = new Stampery('your-secret-token', 'prod');
+$s = new Stampery('user-secret');
 
 $s->on('ready', function($s)
 {

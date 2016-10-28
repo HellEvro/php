@@ -38,10 +38,11 @@ $s->on('ready', function($s)
   $res = $s->stamp($digest);
 });
 
-$s->on('proof', function($hash, $proof)
+$s->on('proof', function($hash, $proof, $s)
 {
   echo("Received proof for hash ".$hash."\n");
   var_dump($proof);
+  echo("Validity: ".$s->prove($proof)."\n");
 });
 
 $s->start();
